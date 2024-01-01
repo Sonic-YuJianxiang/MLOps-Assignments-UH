@@ -1,0 +1,25 @@
+data:
+  prometheus.rules: |-
+    groups:
+    # An example alerting rule
+    - name: Prediction latency alert
+      rules:
+      - alert: High prediction latency
+        expr: histogram_quantile(0.9, rate(revision_app_request_latencies_bucket{isvc_name="wine-quality"}[5m])) > 500
+        for: 5s
+        labels:
+          severity: warning
+        annotations:
+          summary: High prediction latency
+
+    ### START ALERTING RULE
+    - name: Too many 4xx errors
+      rules:
+      - alert: TooMany4xxErrors
+        expr: sum(rate(http_requests_total{namespace="kserve-inference", isvc_name="wine-quality", status=~"4.."}[1m])) > 10
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Too many 4xx errors from wine-quality service"
+    ### END ALERTING RULE
